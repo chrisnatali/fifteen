@@ -147,7 +147,7 @@ def test_solve_2x2():
     shuffled, moves = shuffle_puzzle(puz, 10)
     print("moves: {}".format(moves))
     puz.solve_2x2()
-    assert puz.n_by_m_check(2, 2)
+    assert puz.nrow_by_mcol_check(2, 2)
 
 def test_solve_4x4():
 
@@ -159,11 +159,26 @@ def test_solve_4x4():
     puz = fif.Puzzle(4, 4, grid)
     # sort it via 30 random moves
     shuffled, moves = shuffle_puzzle(puz, 1000)
-    print("moves: {}".format(moves))
     print("shuffled board:\n {}".format(shuffled))
     shuffled.solve_puzzle()
-    assert shuffled.n_by_m_check(shuffled.get_height() - 1, 
+    assert shuffled.nrow_by_mcol_check(shuffled.get_height() - 1, 
                                  shuffled.get_width() - 1)
+
+def test_solve_5x5():
+
+    num_rows = num_cols = 5
+    grid = [[col + (num_cols * row) 
+             for col in range(num_cols)] 
+            for row in range(num_rows)]
+    
+    puz = fif.Puzzle(num_rows, num_cols, grid)
+    # sort it via 30 random moves
+    shuffled, moves = shuffle_puzzle(puz, 1000)
+    print("shuffled board:\n {}".format(shuffled))
+    shuffled.solve_puzzle()
+    assert shuffled.nrow_by_mcol_check(shuffled.get_height() - 1, 
+                                 shuffled.get_width() - 1)
+
 
 def test_solve_problem():
 
@@ -174,4 +189,4 @@ def test_solve_problem():
 
     puz = fif.Puzzle(4, 4, grid)
     puz.solve_puzzle()
-    assert puz.n_by_m_check(3,3) 
+    assert puz.nrow_by_mcol_check(3,3) 

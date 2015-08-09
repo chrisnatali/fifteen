@@ -124,7 +124,7 @@ class Puzzle:
 
     ##################################################################
     # Phase one methods
-    def n_by_m_check(self, n, m):
+    def nrow_by_mcol_check(self, nrows, mcols):
         """
         check if upper left nxm is solved
 
@@ -134,7 +134,7 @@ class Puzzle:
                             puzzle.get_width() - 1)
         
         """
-        positions = [(row, col) for row in range(n) for col in range(m)]
+        positions = [(row, col) for row in range(nrows) for col in range(mcols)]
         for pos in positions:
             if not self._correct_position(*pos):
                 return False
@@ -209,28 +209,28 @@ class Puzzle:
         # czt:  current zero tile position 
         czt = self.current_position(0, 0)
         # tt: target tile id's by target_row, target_col
-        tt = (target_row, target_col)
+        target_tile = (target_row, target_col)
       
         all_moves = ""
 
         # move up to target
-        while czt[0] > tt[0]:
-            czt, ctt = self._move("u", tt)
+        while czt[0] > target_tile[0]:
+            czt, dummy_ctt = self._move("u", target_tile)
             all_moves += "u"
         
         # move down to target
-        while czt[0] < tt[0]:
-            czt, ctt = self._move("d", tt)
+        while czt[0] < target_tile[0]:
+            czt, dummy_ctt = self._move("d", target_tile)
             all_moves += "d"
 
         # move left to target
-        while czt[1] > tt[1]:
-            czt, ctt = self._move("l", tt)
+        while czt[1] > target_tile[1]:
+            czt, dummy_ctt = self._move("l", target_tile)
             all_moves += "l"
 
         # move right to target
-        while czt[1] < tt[1]:
-            czt, ctt = self._move("r", tt)
+        while czt[1] < target_tile[1]:
+            czt, dummy_ctt = self._move("r", target_tile)
             all_moves += "r"
 
         return all_moves
@@ -244,8 +244,8 @@ class Puzzle:
 
         # czt:  current zero tile position 
         czt = self.current_position(0, 0)
-        # tt: target tile id's by target_row, target_col
-        tt = (target_row, target_col)
+        # target_tile: target tile id's by target_row, target_col
+        target_tile = (target_row, target_col)
         # dtt:  destination target tile position
         dtt = (dest_row, dest_col)
         # ctt:  current target tile position 
@@ -255,24 +255,24 @@ class Puzzle:
 
         # move up to target
         while czt[0] > ctt[0]:
-            czt, ctt = self._move("u", tt)
+            czt, ctt = self._move("u", target_tile)
             all_moves += "u"
 
         # move left to target
         while czt[1] > ctt[1]:
-            czt, ctt = self._move("l", tt)
+            czt, ctt = self._move("l", target_tile)
             all_moves += "l"
 
         # move right to the 1 position left of target if needed
         while czt[1] + 1 < ctt[1]:
-            czt, ctt = self._move("r", tt)
+            czt, ctt = self._move("r", target_tile)
             all_moves += "r"
 
 
         # if target were directly above, we need to 
         # reposition zero to the left
         if czt[0] < ctt[0]:
-            czt, ctt = self._move("ld", tt)
+            czt, ctt = self._move("ld", target_tile)
             all_moves += "ld"
 
         assert (ctt[1] - czt[1]) == 1, "zero tile should be 1 left of target"
@@ -281,25 +281,25 @@ class Puzzle:
         while ctt[1] > dtt[1]:
             # case 1:  we're in top row
             if ctt[0] == 0:
-                czt, ctt = self._move("rdllu", tt)
+                czt, ctt = self._move("rdllu", target_tile)
                 all_moves += "rdllu"
             else:
-                czt, ctt = self._move("rulld", tt)
+                czt, ctt = self._move("rulld", target_tile)
                 all_moves += "rulld"
 
         # move target right to dest col
         while ctt[1] < dtt[1]:
             # case 1:  we're in top row
             if ctt[0] == 0:
-                czt, ctt = self._move("drrul", tt)
+                czt, ctt = self._move("drrul", target_tile)
                 all_moves += "drrul"
             else:
-                czt, ctt = self._move("urrdl", tt)
+                czt, ctt = self._move("urrdl", target_tile)
                 all_moves += "urrdl"
 
         # move target down to dest row 
         while ctt[0] < dtt[0]:
-            czt, ctt = self._move("druld", tt)
+            czt, ctt = self._move("druld", target_tile)
             all_moves += "druld"
 
         return all_moves
@@ -325,26 +325,27 @@ class Puzzle:
         czt = self.current_position(0, 0)
         assert czt == (target_row, 0)
 
-        # tt: target tile id'd by target_row, target_col
-        tt = (target_row, 0)
+        # target_tile: target tile id'd by target_row, target_col
+        target_tile = (target_row, 0)
       
         all_moves = ""
 
         # first move 
-        czt, ctt = self._move("ur", tt)
+        czt, ctt = self._move("ur", target_tile)
         all_moves += "ur"
 
         assert czt == (target_row - 1, 1)
         # if target is not in expected position, we need to do more
-        if ctt != tt:
-            all_moves += self._position_tile(tt[0], tt[1], czt[0], czt[1])
+        if ctt != target_tile:
+            all_moves += self._position_tile(target_tile[0], target_tile[1], 
+                                             czt[0], czt[1])
             czt = self.current_position(0, 0)
             assert czt == (target_row - 1, 0)
-            czt, ctt = self._move("ruldrdlurdluurddlur", tt)
+            czt, ctt = self._move("ruldrdlurdluurddlur", target_tile)
             all_moves += "ruldrdlurdluurddlur"
 
         last_move = "r" * ((self.get_width() - 1) - czt[1])
-        czt, ctt = self._move(last_move, tt)
+        czt, ctt = self._move(last_move, target_tile)
         all_moves += last_move
 
         return all_moves 
@@ -404,23 +405,23 @@ class Puzzle:
         czt = self.current_position(0, 0)
         assert czt == (0, target_col), "zero tile ({}, {})".format(*czt)
 
-        # tt: target tile id'd by target_row, target_col
-        tt = (0, target_col)
+        # target_tile: target tile id'd by target_row, target_col
+        target_tile = (0, target_col)
       
         all_moves = ""
 
         # first move 
-        czt, ctt = self._move("ld", tt)
+        czt, ctt = self._move("ld", target_tile)
         all_moves += "ld"
 
         assert czt == (1, target_col - 1)
         # if target is not in expected position, we need to do more
-        if ctt != tt:
-            all_moves += self._position_tile(tt[0], tt[1], czt[0], czt[1])
+        if ctt != target_tile:
+            all_moves += self._position_tile(target_tile[0], target_tile[1], czt[0], czt[1])
             czt = self.current_position(0, 0)
-            ctt = self.current_position(*tt)
+            ctt = self.current_position(*target_tile)
             assert ctt[0] == 1 and czt == (ctt[0], ctt[1] - 1)
-            czt, ctt = self._move("urdlurrdluldrruld", tt)
+            czt, ctt = self._move("urdlurrdluldrruld", target_tile)
             all_moves += "urdlurrdluldrruld"
 
         assert czt == (1, target_col - 1)
@@ -435,7 +436,7 @@ class Puzzle:
                                     1, target_col)
 
         # move zero tile to position 0, target_col
-        czt, ctt = self._move("ur", (0, 0))
+        dummy_czt, dummy_ctt = self._move("ur", (0, 0))
         moves += "ur"
         return moves
         
@@ -452,14 +453,14 @@ class Puzzle:
         # move the zero tile to its proper position
         moves = self._move_zero_to_target(0, 0)
 
-        if not self.n_by_m_check(2, 2):
+        if not self.nrow_by_mcol_check(2, 2):
             one_pos = self.current_position(0, 1)
             if one_pos == (1, 0):
-                czt, ctt = self._move("drul", (0, 1))
+                czt, dummy_ctt = self._move("drul", (0, 1))
                 moves += "drul"
             else:
                 assert one_pos == (1, 1)
-                czt, ctt = self._move("rdlu", (0, 1))
+                czt, dummy_ctt = self._move("rdlu", (0, 1))
                 moves += "rdlu"
 
         # assert self.two_by_two_check(), "unsolvable 2x2"
@@ -500,8 +501,6 @@ class Puzzle:
 
         return moves
 
-
-        return ""
 
 # Start interactive simulation
 # poc_fifteen_gui.FifteenGUI(Puzzle(2, 3))
